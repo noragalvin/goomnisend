@@ -11,6 +11,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"reflect"
+	"regexp"
 	"time"
 )
 
@@ -19,6 +20,9 @@ const URIFormat string = "api.omnisend.com"
 
 // Version the latest API version
 const Version string = "/v3"
+
+// DatacenterRegex defines which datacenter to hit
+var DatacenterRegex = regexp.MustCompile("[^-]\\w+$")
 
 // API represents the origin of the API
 type API struct {
@@ -40,7 +44,7 @@ func New(apiKey string) *API {
 	u.Path = Version
 
 	return &API{
-		User:     "gochimp3",
+		User:     "goomnisend",
 		Key:      apiKey,
 		endpoint: u.String(),
 	}
@@ -79,6 +83,7 @@ func (api API) Request(method, path string, params QueryParams, body, response i
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-API-KEY", api.Key)
+	// req.SetBasicAuth(api.User, api.Key)
 
 	if params != nil && !reflect.ValueOf(params).IsNil() {
 		queryParams := req.URL.Query()
