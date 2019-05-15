@@ -51,7 +51,6 @@ func (q ListQueryParams) Params() map[string]string {
 }
 
 type ListOfLists struct {
-	baseList
 	Lists []ListResponse `json:"lists"`
 }
 
@@ -169,166 +168,11 @@ func (api API) DeleteList(id string) (bool, error) {
 }
 
 // ------------------------------------------------------------------------------------------------
-// Abuse Reports
-// ------------------------------------------------------------------------------------------------
-
-type ListOfAbuseReports struct {
-	baseList
-
-	ListID  string        `json:"list_id"`
-	Reports []AbuseReport `json:"abuse_reports"`
-}
-
-type AbuseReport struct {
-	ID           string `json:"id"`
-	CampaignID   string `json:"campaign_id"`
-	ListID       string `json:"list_id"`
-	EmailID      string `json:"email_id"`
-	EmailAddress string `json:"email_address"`
-	Date         string `json:"date"`
-
-	withLinks
-}
-
-func (list ListResponse) GetAbuseReports(params *ExtendedQueryParams) (*ListOfAbuseReports, error) {
-	if err := list.CanMakeRequest(); err != nil {
-		return nil, err
-	}
-
-	endpoint := fmt.Sprintf(abuse_reports_path, list.ListID)
-	response := new(ListOfAbuseReports)
-
-	return response, list.api.Request("GET", endpoint, params, nil, response)
-}
-
-func (list ListResponse) GetAbuseReport(id string, params *ExtendedQueryParams) (*AbuseReport, error) {
-	if err := list.CanMakeRequest(); err != nil {
-		return nil, err
-	}
-
-	endpoint := fmt.Sprintf(single_abuse_report_path, list.ListID, id)
-	response := new(AbuseReport)
-
-	return response, list.api.Request("GET", endpoint, params, nil, response)
-}
-
-// ------------------------------------------------------------------------------------------------
-// Activity
-// ------------------------------------------------------------------------------------------------
-
-type ListOfActivity struct {
-	baseList
-
-	ListID     string     `json:"list_id"`
-	Activities []Activity `json:"activity"`
-}
-
-type Activity struct {
-	Day             string `json:"day"`
-	EmailsSent      int    `json:"emails_sent"`
-	UniqueOpens     int    `json:"unique_opens"`
-	RecipientClicks int    `json:"recipient_clicks"`
-	HardBounce      int    `json:"hard_bounce"`
-	SoftBounce      int    `json:"soft_bounce"`
-	Subs            int    `json:"subs"`
-	Unsubs          int    `json:"unsubs"`
-	OtherAdds       int    `json:"other_adds"`
-	OtherRemoves    int    `json:"other_removes"`
-
-	withLinks
-}
-
-func (list ListResponse) GetActivity(params *BasicQueryParams) (*ListOfActivity, error) {
-	if err := list.CanMakeRequest(); err != nil {
-		return nil, err
-	}
-
-	endpoint := fmt.Sprintf(activity_path, list.ListID)
-	response := new(ListOfActivity)
-
-	return response, list.api.Request("GET", endpoint, params, nil, response)
-}
-
-// ------------------------------------------------------------------------------------------------
-// Clients
-// ------------------------------------------------------------------------------------------------
-
-type ListOfClients struct {
-	baseList
-
-	ListID  string   `json:"list_id"`
-	Clients []Client `json:"clients"`
-}
-
-type Client struct {
-	Client  string `json:"client"`
-	Members int    `json:"members"`
-	ListID  string `json:"list_id"`
-
-	withLinks
-}
-
-func (list ListResponse) GetClients(params *BasicQueryParams) (*ListOfClients, error) {
-	if list.ListID == "" {
-		return nil, errors.New("No ID provided on list")
-	}
-
-	endpoint := fmt.Sprintf(clients_path, list.ListID)
-	response := new(ListOfClients)
-
-	return response, list.api.Request("GET", endpoint, params, nil, response)
-}
-
-// ------------------------------------------------------------------------------------------------
-// Growth History
-// ------------------------------------------------------------------------------------------------
-
-type ListOfGrownHistory struct {
-	baseList
-
-	ListID  string          `json:"list_id"`
-	History []GrowthHistory `json:"history"`
-}
-
-type GrowthHistory struct {
-	ListID   string `json:"list_id"`
-	Month    string `json:"month"`
-	Existing int    `json:"existing"`
-	Imports  int    `json:"imports"`
-	OptIns   int    `json:"optins"`
-
-	withLinks
-}
-
-func (list ListResponse) GetGrowthHistory(params *ExtendedQueryParams) (*ListOfGrownHistory, error) {
-	if err := list.CanMakeRequest(); err != nil {
-		return nil, err
-	}
-
-	endpoint := fmt.Sprintf(history_path, list.ListID)
-	response := new(ListOfGrownHistory)
-
-	return response, list.api.Request("GET", endpoint, params, nil, response)
-}
-
-func (list ListResponse) GetGrowthHistoryForMonth(month string, params *BasicQueryParams) (*GrowthHistory, error) {
-	if err := list.CanMakeRequest(); err != nil {
-		return nil, err
-	}
-
-	endpoint := fmt.Sprintf(single_history_path, list.ListID, month)
-	response := new(GrowthHistory)
-
-	return response, list.api.Request("GET", endpoint, params, nil, response)
-}
-
-// ------------------------------------------------------------------------------------------------
 // Interest Categories
 // ------------------------------------------------------------------------------------------------
 
 type ListOfInterestCategories struct {
-	baseList
-	ListID     string             `json:"list_id"`
+	ListID     string             `json:"listID"`
 	Categories []InterestCategory `json:"categories"`
 }
 
@@ -341,7 +185,7 @@ type InterestCategoryRequest struct {
 type InterestCategory struct {
 	InterestCategoryRequest
 
-	ListID string `json:"list_id"`
+	ListID string `json:"listID"`
 	ID     string `json:"id"`
 
 	withLinks
@@ -359,7 +203,8 @@ func (interestCatgory InterestCategory) CanMakeRequest() error {
 type InterestCategoriesQueryParams struct {
 	ExtendedQueryParams
 
-	Type string `json:"type"`
+	ListID string `json:"listID"`
+	Type   string `json:"type"`
 }
 
 func (q InterestCategoriesQueryParams) Params() map[string]string {
@@ -431,211 +276,4 @@ func (list ListResponse) DeleteInterestCategory(id string) (bool, error) {
 
 	endpoint := fmt.Sprintf(single_interest_category_path, list.ListID, id)
 	return list.api.RequestOk("DELETE", endpoint)
-}
-
-// ------------------------------------------------------------------------------------------------
-// Interest
-// ------------------------------------------------------------------------------------------------
-
-type ListOfInterests struct {
-	Interests  []Interest `json:"interests"`
-	CategoryID string     `json:"category_id"`
-	ListID     string     `json:"list_id"`
-	TotalItems int        `json:"total_items"`
-	withLinks
-}
-
-type Interest struct {
-	CategoryID   string `json:"category_id"`
-	ListID       string `json:"list_id"`
-	ID           string `json:"id"`
-	Name         string `json:"name"`
-	DisplayOrder int    `json:"display_order"`
-	withLinks
-}
-
-type InterestRequest struct {
-	Name         string `json:"name"`
-	DisplayOrder int    `json:"display_order"`
-}
-
-func (list ListResponse) GetInterests(interestCategoryID string, params *ExtendedQueryParams) (*ListOfInterests, error) {
-	if err := list.CanMakeRequest(); err != nil {
-		return nil, err
-	}
-
-	endpoint := fmt.Sprintf(interests_path, list.ListID, interestCategoryID)
-	response := new(ListOfInterests)
-
-	return response, list.api.Request("GET", endpoint, params, nil, response)
-}
-
-func (list ListResponse) GetInterest(interestCategoryID, interestID string, params *BasicQueryParams) (*Interest, error) {
-	if err := list.CanMakeRequest(); err != nil {
-		return nil, err
-	}
-
-	endpoint := fmt.Sprintf(single_interest_path, list.ListID, interestCategoryID, interestID)
-	response := new(Interest)
-
-	return response, list.api.Request("GET", endpoint, params, nil, response)
-}
-
-func (interestCategory InterestCategory) CreateInterest(body *InterestRequest) (*Interest, error) {
-	if err := interestCategory.CanMakeRequest(); err != nil {
-		return nil, err
-	}
-
-	endpoint := fmt.Sprintf(interests_path, interestCategory.ListID, interestCategory.ID)
-	response := new(Interest)
-
-	return response, interestCategory.api.Request("POST", endpoint, nil, body, response)
-}
-
-// ------------------------------------------------------------------------------------------------
-// Batch subscribe list members
-// ------------------------------------------------------------------------------------------------
-type BatchSubscribeMembersError struct {
-	EmailAddress string `json:"email_address"`
-	ErrorMessage string ` json:"error"`
-}
-
-type BatchSubscribeMembersResponse struct {
-	withLinks
-
-	NewMembers     []ListOfMembers              `json:"new_members"`
-	UpdatedMembers []ListOfMembers              `json:"updated_members"`
-	ErrorMessages  []BatchSubscribeMembersError `json:"errors"`
-	TotalCreated   int                          `json:"total_created"`
-	TotalUpdated   int                          `json:"total_updated"`
-	ErrorCount     int                          `json:"error_count"`
-
-	api *API
-}
-
-type BatchSubscribeMembersRequest struct {
-	Members        []MemberRequest `json:"members"`
-	UpdateExisting bool            `json:"update_existing"`
-}
-
-func (list ListResponse) BatchSubscribeMembers(body *BatchSubscribeMembersRequest) (*BatchSubscribeMembersResponse, error) {
-	if err := list.CanMakeRequest(); err != nil {
-		return nil, err
-	}
-
-	endpoint := fmt.Sprintf(lists_batch_subscribe_members, list.ListID)
-	response := new(BatchSubscribeMembersResponse)
-
-	return response, list.api.Request("POST", endpoint, nil, body, response)
-}
-
-// ------------------------------------------------------------------------------------------------
-// Merge Fields
-// ------------------------------------------------------------------------------------------------
-
-type MergeFieldsParams struct {
-	ExtendedQueryParams
-
-	Type     string `json:"type"`
-	Required bool   `json:"required"`
-}
-
-type MergeFieldParams struct {
-	BasicQueryParams
-
-	MergeID string `json:"_"`
-}
-
-type ListOfMergeFields struct {
-	baseList
-
-	ListID      string       `json:"list_id"`
-	MergeFields []MergeField `json:"merge_fields"`
-}
-
-type MergeField struct {
-	MergeID      int               `json:"merge_id"`
-	Tag          string            `json:"tag"`
-	Name         string            `json:"name"`
-	Type         string            `json:"type"`
-	Required     bool              `json:"required"`
-	DefaultValue string            `json:"default_value"`
-	Public       bool              `json:"public"`
-	DisplayOrder int               `json:"display_order"`
-	Options      MergeFieldOptions `json:"options"`
-	HelpText     string            `json:"help_text"`
-	ListID       string            `json:"list_id"`
-
-	withLinks
-}
-
-type MergeFieldOptions struct {
-	DefaultCountry int      `json:"default_Country"`
-	PhoneFormat    string   `json:"phone_format"`
-	DateFormat     string   `json:"date_format"`
-	Choices        []string `json:"choices"`
-	Size           int      `json:"size"`
-}
-
-type MergeFieldRequest struct {
-	// The tag used in MailChimp campaigns and for the /members endpoint.
-	Tag string `json:"tag"`
-
-	// The name of the merge field.
-	Name string `json:"name"`
-
-	// The type for the merge field.
-	// Possible Values: text, number, address, phone, date, url, image, url, radio, dropdown, birthday, zip
-	Type string `json:"type"`
-
-	// The boolean value if the merge field is required.
-	Required bool `json:"required"`
-
-	// The default value for the merge field if null.
-	DefaultValue string `json:"default_value"`
-
-	// Whether the merge field is displayed on the signup form.
-	Public bool `json:"public"`
-
-	// The order that the merge field displays on the list signup form.
-	DisplayOrder int `json:"display_order"`
-
-	// The order that the merge field displays on the list signup form.
-	Options MergeFieldOptions `json:"options"`
-
-	// Extra text to help the subscriber fill out the form.
-	HelpText string `json:"help_text"`
-}
-
-func (list ListResponse) GetMergeFields(params *MergeFieldsParams) (*ListOfMergeFields, error) {
-	if err := list.CanMakeRequest(); err != nil {
-		return nil, err
-	}
-
-	endpoint := fmt.Sprintf(merge_fields_path, list.ListID)
-	response := new(ListOfMergeFields)
-
-	return response, list.api.Request("GET", endpoint, params, nil, response)
-}
-
-func (list ListResponse) GetMergeField(params *MergeFieldParams) (*MergeField, error) {
-	if err := list.CanMakeRequest(); err != nil {
-		return nil, err
-	}
-
-	endpoint := fmt.Sprintf(merge_field_path, list.ListID, params.MergeID)
-	response := new(MergeField)
-
-	return response, list.api.Request("GET", endpoint, params, nil, response)
-}
-
-func (list ListResponse) CreateMergeField(body *MergeFieldRequest) (*MergeField, error) {
-	if err := list.CanMakeRequest(); err != nil {
-		return nil, err
-	}
-
-	endpoint := fmt.Sprintf(merge_fields_path, list.ListID)
-	response := new(MergeField)
-
-	return response, list.api.Request("POST", endpoint, nil, body, response)
 }

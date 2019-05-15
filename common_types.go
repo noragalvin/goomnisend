@@ -44,6 +44,13 @@ type ExtendedQueryParams struct {
 	Offset int
 }
 
+type Paging struct {
+	Previous string `json:"previous"`
+	Next     string `json:"next"`
+	Offset   int    `json:"offset"`
+	Limit    int    `json:"limit"`
+}
+
 func (q ExtendedQueryParams) Params() map[string]string {
 	m := q.BasicQueryParams.Params()
 	m["count"] = fmt.Sprintf("%d", q.Count)
@@ -72,11 +79,6 @@ func (q BasicQueryParams) Params() map[string]string {
 
 type withLinks struct {
 	Link []Link `json:"_link"`
-}
-
-type baseList struct {
-	TotalItems int    `json:"total_items"`
-	Links      []Link `json:"_links"`
 }
 
 // Link refereneces another object
@@ -135,16 +137,4 @@ type LineItem struct {
 	// Optional
 	ProductTitle        string `json:"product_title,omitempty"`
 	ProductVariantTitle string `json:"product_variant_title,omitempty"`
-}
-
-// Contact defines a single contact
-type Contact struct {
-	Company     string `json:"customer"`
-	Address1    string `json:"address1"`
-	Address2    string `json:"address2"`
-	City        string `json:"city"`
-	State       string `json:"state"`
-	Zip         string `json:"zip"`
-	Country     string `json:"country"`
-	PhoneNumber string `json:"phone"`
 }
